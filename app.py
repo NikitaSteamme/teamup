@@ -11,27 +11,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
-    print("Creating tables...")
     db.create_all()
-    print("Tables created.")
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        
+        # Create a new task
+        new_task = Task(title=title, description=description)
+        db.session.add(new_task)
+        db.session.commit()
+        
+        return redirect(url_for('index'))
+    
+    # Fetch all tasks from the database
     tasks = Task.query.all()
-    return render_template('index.html')
-
-@app.route('/add_task', methods=['POST'])
-def add_task():
-    title = request.form.get('title')
-    description = request.form.get('description')
-
-    # Создаем новую задачу и добавляем ее в базу данных
-    new_task = Task(title=title, description=description)
-    db.session.add(new_task)
-    db.session.commit()
-
-    # Перенаправляем на главную страницу после добавления задачи
-    return redirect(url_for('index'))
+    return render_template('index.html', tasks=tasks)
 
 @app.route('/check_db')
 def check_db():
