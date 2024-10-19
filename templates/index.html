@@ -12,7 +12,7 @@
             <h1>Task Tracker</h1>
     
             <!-- Форма для создания задачи -->
-            <form action="/add_task" method="POST" class="mb-4">
+            <form action="/" method="POST" class="mb-4">
                 <div class="mb-3">
                     <label for="title" class="form-label">Task Title</label>
                     <input type="text" class="form-control" id="title" name="title" required>
@@ -25,7 +25,6 @@
             </form>
     
             <!-- Список задач -->
-           <!-- Заменяем блок Alpine.js на Python -->
             <div>
                 <ul class="list-group">
                     {% for task in tasks %}
