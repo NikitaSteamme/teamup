@@ -7,15 +7,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from models import db, User, Task
 from forms import LoginForm, RegistrationForm, PasswordRecoveryForm, TaskForm
+from flask_migrate import Migrate
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'tasks.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = 'your_secret'
 
 db.init_app(app)
+migrate = Migrate(app, db)
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -78,28 +81,23 @@ def settings():
     return render_template('settings.html')
 
 @app.route('/', methods=['GET', 'POST'])
-@login_required
 def index():
     form = TaskForm()
     if form.validate_on_submit():
-        new_task = Task(title=form.title.data, description=form.description.data, user_id=current_user.id)
+        new_task = Task(title=form.title.data, description=form.description.data)
         db.session.add(new_task)
         db.session.commit()
         return redirect(url_for('index'))
-    tasks = Task.query.filter_by(user_id=current_user.id).all()
+    tasks = Task.query.all()
     return render_template('index.html', form=form, tasks=tasks)
 
 @app.route('/check_db')
 def check_db():
     try:
-        # Connect to the SQLite database
-        conn = sqlite3.connect('tasks.db')
+        conn = sqlite3.connect('your_database.db')
         cursor = conn.cursor()
-        
-        # Check if the 'tasks' table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='task';")
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks';")
         table_exists = cursor.fetchone()
-        
         if table_exists:
             return "Table 'tasks' exists."
         else:
